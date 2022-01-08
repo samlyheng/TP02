@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Exercise 2</title>
+    <style>
+        body {
+            background-color: white;;
+        }
+        
+        #canvas,
+        #canvasp {
+            border: 10px solid grey;
+            border-top: 5px solid grey;
+            background-color: white;
+        }
+        
+        .control {
+            background-color: grey;
+            width: 620px;
+        }
+        
+        .control>span {
+            color: white;
+        }
+        
+        .control>div>button {
+            margin-bottom: 5px;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5%;
+            margin-top: 3px;
+        }
+        
+        #start {
+            background-color: blue;
+        }
+        
+        #stop {
+            background-color: red;
+        }
+        
+        #pause {
+            background-color: blue;
+
+        }
+    </style>
+</head>
+
+<body>
+    <!--Canvas-->
+    <center>
+        <video autoplay hidden></video>
+        <canvas width="600" height="480" id="canvas"></canvas>
+        <canvas width="600" height="480" id="canvasp" hidden></canvas>
+        <div class="control">
+            <span>Canvas 🤣 : Show your cute face here!</span>
+            <div>
+                <button id="start">Start</button>
+                <button id="stop" hidden>Stop</button>
+                <button id="pause" hidden>Pause</button>
+            </div>
+        </div>
+    </center>
+    <!--Botton action-->
+    <script>
+        let start = document.getElementById("start");
+        let stop = document.getElementById("stop");
+        let pause = document.getElementById("pause");
+        let receivedMediaStream = null;
+
+
+        window.addEventListener('click', function(event) {
+            var constraints = {
+                audio: false,
+                video: true
+            };
+
+            if (event.target.id == "start") {
+                start.hidden = true;
+                stop.hidden = false;
+                pause.hidden = false;
+                canvasp.hidden = true;
+                canvas.hidden = false;
+
+                var constraints = {
+                    audio: false,
+                    video: true
+                };
+
+                //access webcam 
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then((mediaStream) => {
+                        var video = document.querySelector('video');
+                        video.srcObject = mediaStream;
+                        receivedMediaStream = mediaStream;
+
+                        video.onloadedmetadata = function loop() {
+                            //draw image to canvas
+                            video.play();
+                            if (video.play) {
+                                var canvas = document.getElementById("canvas");
+                                canvas.width = 600;
+                                canvas.height = 480;
+                                var ctx = canvas.getContext('2d');
+
+                                ctx.drawImage(video, 0, 0);
+                                setTimeout(loop, 1000 / 30); 
+                            }
+                        };
+                    })
+                    //error message
+                    .catch((err) => {
+                        console.log(err.name + ": " + err.message);
+                    }); 
+            } else if (event.target.id == "stop") {
+                start.hidden = false;
+                stop.hidden = true;
+                canvas.hidden = false;
+                canvasp.hidden = true;
+
+                //close webcam
+                receivedMediaStream.getTracks().forEach(mediaTrack => {
+                    mediaTrack.stop();
+                });
+                // pause webcam
+            } else if (event.target.id == "pause") {
+                canvas.hidden = true;
+                canvasp.hidden = false;
+                start.hidden = false;
+                stop.hidden = true;
+                var video = document.querySelector('video');
+                canvasp = document.getElementById("canvasp");
+
+                //pause image 
+                video.pause();
+                canvasp.width = 600;
+                canvasp.height = 480;
+                var ctx = canvasp.getContext('2d');
+
+                ctx.drawImage(video, 0, 0);
+            }
+
+        })
+    </script>
+</body>
+
+</html>
